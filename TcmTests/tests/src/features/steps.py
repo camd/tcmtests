@@ -8,18 +8,14 @@ from nose.tools import *
 from numpy.ma.testutils import *
 import httplib
 import json
-import scenario_data
-import urllib
+import mock_scenario_data
+import post_data
 
 conn = "happy"
 
 def get_connection():
     return httplib.HTTPConnection('localhost', 8080)
 
-@before.all
-def setup_connection():
-    conn = get_connection()
-    
 #
 # DATA SETUP
 # This is the function that uploads the expected data to the mock server.
@@ -27,7 +23,7 @@ def setup_connection():
 # @todo Need to make this only run in DEBUG mode or something
 @before.each_scenario
 def setup_scenario_data(scenario):
-    scenarioData = scenario_data.get_scenario_data(scenario.name)
+    scenarioData = mock_scenario_data.get_scenario_data(scenario.name)
     headers = { 'content-Type':'text/plain',
             "Content-Length": "%d" % len(scenarioData) }
 
@@ -36,11 +32,13 @@ def setup_scenario_data(scenario):
     conn.send(scenarioData)
     conn.getresponse()
 
+'''
 ######################################################################
 
-#                     USER STEPS
+                     USER STEPS
 
 ######################################################################
+'''
     
 @step(u'user "(.*)" is (.*)registered')
 def user_foo_check_registration(step, name, registered):
@@ -65,7 +63,7 @@ def user_foo_check_registration(step, name, registered):
 def submit_information_for_user_foo(step, name):
     names = name.split()
     
-    xml_data = get_submit_user(names[0], names[1])
+    xml_data = post_data.get_submit_user(names[0], names[1])
     headers = { 'content-Type':'text/xml',
             "Content-Length": "%d" % len(xml_data) }
 
@@ -88,32 +86,30 @@ def user_has_foo__has_active_status_bar(step, name, exp_active):
     userJson = respJson.get("user")
     assert_equal(userJson.get("active"), exp_active, "active status")
 
+# @TODO This function may not be useful.  Possibly dead code
 @step(u'user "(.*)" has id of (\d+)')
-def user_foo_has_id_of_bar(step, name, id):
-    names = name.split()
-    conn = get_connection()
-    conn.request("GET", "/api/v1/users?firstName=" + names[0] + "&lastName=" + names[1])
-    response = conn.getresponse()
-    assert_equal(response.status, 200, "Fetched a user")
+def user_foo_has_id_of_bar(step, name, exp_id):
+    act_id = get_user_resid(name)
 
-    respJson = json.loads(response.read())
-    userJson = respJson.get("user")
-    assert_equal(userJson.get("resourceIdentity"), id, "matching resourceIdentity")
+    assert_equal(act_id, exp_id, "matching resourceIdentity")
 
-@step(u'(activate|deactivate) the user with id (\d+)')
-def activate_deactivate_user_foo(step, action, userid):
+@step(u'(activate|deactivate) user "(.*)"')
+def activate_deactivate_user_foo(step, action, name):
     conn = get_connection()
-    conn.request("PUT", "/api/v1/users/" + userid + "/" + action)
+    user_id = get_user_resid(name)
+    
+    conn.request("PUT", "/api/v1/users/" + user_id + "/" + action)
     response = conn.getresponse()
     assert_equal(response.status, 200, action +"ed user")
 
 
-
+'''
 ######################################################################
 
-#                     ROLE STEPS
+                     ROLE STEPS
 
 ######################################################################
+'''
 
 @step(u'logged in as "(.*)"')
 def logged_in_as_user_foo(step, name):
@@ -134,21 +130,11 @@ def user_foo_has_the_role_of_bar(step, name, role):
     # This takes 2 requests to complete
     #    1: get the id of the user
     #    2: check that user has that role
-    names = name.split()
     conn = get_connection()
     
     # fetch the user's resource identity
-    conn.request("GET", "/api/v1/users?firstName=" + names[0] + "&lastName=" + names[1])
-    response = conn.getresponse()
-    assert_equal(response.status, 200, "Fetched a user")
-
-    respJson = json.loads(response.read())
-    userJson = respJson.get("user")
-    assert_not_equal(userJson, None, "should not be empty")
-    
-    userid = userJson.get("resourceIdentity")
-
-    conn.request("GET", "/api/v1/users/" + userid + "/roles")
+    user_id = get_user_resid(name)
+    conn.request("GET", "/api/v1/users/" + user_id + "/roles")
     response = conn.getresponse()
     assert_equal(response.status, 200, "Fetched a user")
 
@@ -165,7 +151,7 @@ def user_foo_has_the_role_of_bar(step, name, role):
 @step(u'create a new role of "(.*)"')
 def create_a_new_role_of_x(step, new_role):
     
-    json_data = get_submit_role(new_role)
+    json_data = post_data.get_submit_role(new_role)
     headers = { 'content-Type':'text/xml',
             "Content-Length": "%d" % len(json_data) }
 
@@ -183,23 +169,14 @@ def add_permission_foo_to_role_bar(step, permission, role):
     #    2: add the permission to the role
     conn = get_connection()
     
-    # fetch the user's resource identity
-    conn.request("GET", "/api/v1/roles?description=" + role)
-    response = conn.getresponse()
-    assert_equal(response.status, 200, "Fetched a role")
-
-    respJson = json.loads(response.read())
+    # fetch the role's resource identity
+    role_id = get_role_resid(role)
     
-    roleJson = respJson.get("role")
-    assert_not_equal(roleJson, None, "should not be empty")
-    
-    roleid = roleJson.get("resourceIdentity")
-
-    post_payload = get_submit_permission(permission)
+    post_payload = post_data.get_submit_permission(permission)
     headers = { 'content-Type':'text/xml',
             "Content-Length": "%d" % len(post_payload) }
 
-    conn.request("POST", "/api/v1/roles/" + roleid + "/permissions", "", headers)
+    conn.request("POST", "/api/v1/roles/" + role_id + "/permissions", "", headers)
     conn.send(post_payload)
     response = conn.getresponse()
     assert_equal(response.status, 200, "post new permission to role")
@@ -214,17 +191,9 @@ def then_role_foo_has_permission_of_bar(step, role, permission):
     conn = get_connection()
     
     # fetch the user's resource identity
-    conn.request("GET", "/api/v1/roles?description=" + role)
-    response = conn.getresponse()
-    assert_equal(response.status, 200, "Fetched a role")
+    role_id = get_role_resid(role)
 
-    respJson = json.loads(response.read())
-    roleJson = respJson.get("role")
-    assert_not_equal(roleJson, None, "should not be empty")
-    
-    roleid = roleJson.get("resourceIdentity")
-
-    conn.request("GET", "/api/v1/roles/" + roleid + "/permissions")
+    conn.request("GET", "/api/v1/roles/" + role_id + "/permissions")
     response = conn.getresponse()
     assert_equal(response.status, 200, "Fetched a permission")
 
@@ -266,7 +235,7 @@ def order_role_searches_list_foor_before_bar(step, order, first, second):
     conn = get_connection()
     
     # fetch the user's resource identity
-    conn.request("GET", "/api/v1/roles")
+    conn.request("GET", "/api/v1/roles?sortDirection=" + order)
     response = conn.getresponse()
     assert_equal(response.status, 200, "Fetched list of all roles")
 
@@ -293,13 +262,13 @@ def order_role_searches_list_foor_before_bar(step, order, first, second):
     
 
 
-
+'''
 ######################################################################
 
-#                     TEST CASE STEPS
+                     TEST CASE STEPS
 
 ######################################################################
-
+'''
 # not implemented yet
 
 
@@ -308,51 +277,40 @@ def order_role_searches_list_foor_before_bar(step, order, first, second):
 
 
 
+'''
+######################################################################
 
-#  Helper function
-def get_submit_user(fname, lname):    
-    user = """
-        {
-            "user":{
-                "firstname":"%(fname)s",
-                "lastname":"%(lname)s",
-                "email":"%(fname)s%(lname)s@utest.com",
-                "loginname":"%(fname)s%(lname)s",
-                "password":"%(fname)s%(lname)s123",
-                "companyid":1,
-                "communitymember":"false"
-            }
-        }
-    """ % {'fname': fname, 'lname': lname}
-    returnStr = ""
-    for line in user:
-        returnStr += line.strip()
-    return returnStr.encode('ascii', 'xmlcharrefreplace')
+                     HELPER FUNCTIONS
 
-def get_submit_role(rolename):
-    user = """
-        {
-            "role":{
-                "description":"%(rolename)s"
-            }
-        }
-    """ % {'rolename': rolename}
-    returnStr = ""
-    for line in user:
-        returnStr += line.strip()
-    return returnStr.encode('ascii', 'xmlcharrefreplace')
-    
-def get_submit_permission(permission_name):
-    perm = """
-        {
-            "permission":{
-                "description":"%(permission_name)s"
-            }
-        }
-    """ % {'permission_name': permission_name}
-    returnStr = ""
-    for line in perm:
-        returnStr += line.strip()
-    return urllib.quote(returnStr)
+######################################################################
+'''
+
+def get_user_resid(name):
+    ''' 
+        name: Split into 2 parts at the space.  Only the first two parts are used.  Must have at least 2 parts.
+    '''
+    names = name.split()
+    return get_resource_identity("user", "/api/v1/users?firstName=" + names[0] + "&lastName=" + names[1])
+
+def get_role_resid(role):
+    '''
+        Get the resourceIdentity of a role, based on the description of the role
+    '''
+    return get_resource_identity("role", "/api/v1/roles?description=" + role)
+
+
+def get_resource_identity(type, uri):
+    '''
+        type: Something like user or role or permission.  The JSON object type
+        uri: The URI stub to make the call
+    '''
+    conn = get_connection()
+    conn.request("GET", uri)
+    response = conn.getresponse()
+    assert_equal(response.status, 200, "Response when asking for " + type)
+
+    respJson = json.loads(response.read())
+    objJson = respJson.get(type)
+    return objJson.get("resourceIdentity")
 
 
