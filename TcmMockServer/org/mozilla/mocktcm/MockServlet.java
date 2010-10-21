@@ -46,6 +46,7 @@ public class MockServlet extends HttpServlet {
                  * Therefore, I must decode it here.
                  */
                 String responseStr = URLDecoder.decode(steps[currentStep].response, "UTF-8");
+                System.out.println(responseStr);
                 response.getWriter().println(responseStr);
                 currentStep++;
             }

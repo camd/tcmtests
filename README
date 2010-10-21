@@ -1,0 +1,4 @@
+This is the repository for the Lettuce/Python tests used to test the uTest Test Case Management system API set.
+These tests will be used to test the back-end, once that exists.
+
+In the mean time, this repository also holds a Mock Server written as a Java Servlet.
