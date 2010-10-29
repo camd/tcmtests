@@ -39,8 +39,8 @@ def get_scenario_data(scenarioName):
                 {"status": "200","response": "%(activeFalse)s",      "comment": "request it to be activated"},
                 {"status": "200","response": "%(activeTrue)s",       "comment": "expect it's now active"}
             ]
-        """ % { 'activeFalse': get_returned_user("Jedi", "Jones", "false"),
-                'activeTrue': get_returned_user("Jedi", "Jones", "true")}
+        """ % { 'activeFalse': get_returned_user(["Jedi Jones"], "false"),
+                'activeTrue': get_returned_user(["Jedi Jones"], "true")}
         
     elif scenarioName == "Activate a Non Active user":
         data = """
@@ -51,8 +51,8 @@ def get_scenario_data(scenarioName):
                 {"status": "200","response": "POST, no return"},
                 {"status": "200","response": "%(activeTrue)s"}
             ]
-        """ % { 'activeFalse': get_returned_user("Jedi", "NotActive", "false"),
-                'activeTrue': get_returned_user("Jedi", "NotActive", "true")}
+        """ % { 'activeFalse': get_returned_user(["Jedi NotActive"], "false"),
+                'activeTrue': get_returned_user(["Jedi NotActive"], "true")}
     
     elif scenarioName == "Deactivate an Active user":
         data = """
@@ -63,8 +63,8 @@ def get_scenario_data(scenarioName):
                 {"status": "200","response": "POST, w/o response"},
                 {"status": "200","response": "%(activeFalse)s"}
             ]
-        """ % { 'activeFalse': get_returned_user("Jedi", "Active", "false"),
-                'activeTrue': get_returned_user("Jedi", "Active", "true")}
+        """ % { 'activeFalse': get_returned_user(["Jedi Active"], "false"),
+                'activeTrue': get_returned_user(["Jedi Active"], "true")}
         
     elif scenarioName == "Create a new Role and add Permission":
         data = """
@@ -78,9 +78,9 @@ def get_scenario_data(scenarioName):
                 {"status": "200","response": "%(new_role)s",       "comment": "get id of role"},
                 {"status": "200","response": "%(permissions)s",    "comment": "get permissions for new role"}
             ]
-        """ % { 'ourAdminUser': get_returned_user("Jedi", "Admin", "true"),
+        """ % { 'ourAdminUser': get_returned_user(["Jedi Admin"], "true"),
                 'users_roles': get_returned_roles(["ADMINISTRATOR"]), 
-                'new_role': get_returned_role("Creationator"),
+                'new_role': get_returned_roles(["Creationator"]),
                 'permissions': get_returned_permissions(["Spammer"])}
         
     elif scenarioName == "Get list of roles":
@@ -93,8 +93,64 @@ def get_scenario_data(scenarioName):
         """ % { 'roles': get_returned_roles(["Apple", "Zipper", "Frame"]),
                 'asc_roles': get_returned_roles(["Apple", "Frame", "Zipper"]),
                 'desc_roles': get_returned_roles(["Zipper", "Frame", "Apple"])}
-        
     
+    elif scenarioName == "Create a new Test Case":
+        data = """
+            [
+                {"status": "200","response": "%(our_user)s",       "comment": "logged in as user"},
+                {"status": "200","response": "%(our_user)s",       "comment": "get id of user"},
+                {"status": "200","response": "%(users_roles)s",    "comment": "check users roles"},
+                {"status": "200","response": "POST, w/o response", "comment": "create a new test case"},
+                {"status": "200","response": "%(new_test_case)s",  "comment": "get new test case data"}
+            ]
+        """ % { 'our_user': get_returned_user(["Jedi Creator"], "true"),
+                'users_roles': get_returned_roles(["TEST_CREATOR"]),
+                'new_test_case': get_returned_test_case(["Testing mic #1.  Isn't this a lot of fun."]) 
+              }
+
+    elif scenarioName == "Assign a Role to a User":
+        data = """
+            [
+                {"status": "200","response": "%(our_user)s",       "comment": "Given user Jedi Roller has active status true"},
+                {"status": "200","response": "%(roles)s",          "comment": "And the role of CHIPPER exists"},
+                {"status": "200","response": "%(our_user)s",       "comment": "get id of user"},
+                {"status": "200","response": "%(old_roles)s",      "comment": "And Jedi Roller does not already have the role of CHIPPER"},
+                {"status": "200","response": "%(our_user)s",       "comment": "get id of user"},
+                {"status": "200","response": "POST, w/o response", "comment": "When I add role of CHIPPER to user Jedi Roller"},
+                {"status": "200","response": "%(our_user)s",       "comment": "get id of user"},
+                {"status": "200","response": "%(new_roles)s",      "comment": "Then Jedi Roller has the role of CHIPPER"}
+            ]
+        """ % { 'our_user': get_returned_user(["Jedi Roller"], "true"),
+                'roles': get_returned_roles(["CHIPPER"]), 
+                'old_roles': get_returned_roles(["MASHER", "SMASHER"]), 
+                'new_roles': get_returned_roles(["MASHER", "SMASHER", "CHIPPER"]) 
+            }
+
+    elif scenarioName == "Check Roles of a User":
+        data = """
+            [
+                {"status": "200","response": "%(our_user)s",       "comment": "Given user Jedi Roller has active status true"},
+                {"status": "200","response": "%(our_user)s",       "comment": "get id of user"},
+                {"status": "200","response": "%(roles)s",          "comment": "Then Jedi Roller has the role of MASHER and SMASHER"}
+            ]
+        """ % { 'our_user': get_returned_user(["Jedi Roller"], "true"),
+                'roles': get_returned_roles(["MASHER", "SMASHER"])
+              }
+               
+    elif scenarioName == "Check the Assignments of a User":
+        data = """
+            [
+                {"status": "200","response": "%(our_user)s",       "comment": "Given user has active status true"},
+                {"status": "200","response": "%(our_user)s",       "comment": "get id of user"},
+                {"status": "200","response": "%(assignments)s",    "comment": "Then the user has the listed assignments"}
+            ]
+        """ % { 'our_user': get_returned_user(["Jedi Assigned"], "true"),
+                'assignments': get_returned_assignments(["What the cat dragged in", "Where I put the keys"])
+              }
+        
+        
+
+
     return data
 
 
@@ -104,14 +160,29 @@ def get_scenario_data(scenarioName):
                            RETURN TYPES
 
 ############################################################################
+
+ASSUMPTION: I wasn't sure here.  So I'm making an assumption that when you request an object type, you'll get
+            an array in return.  You may only get one element in that array, but it'll be a JSON array.  So I'm
+            going to return an array, even when it only has 1 item.  These methods will be passed an array of
+            whatever item type, and I'll return an array of JSON types for it, even if there's only 1 item in
+            that array.
+
 '''
 
-
-
-def get_returned_user(fname, lname, active, resid="007"):    
-    user = """
-        {
-            "user":{
+def get_returned_user(names, active, resid=7):  
+    '''
+        Return an array of users.  It increments the resid for each one.  They're all the same
+        value of "active" for now.  May need to change that in the future.
+    '''  
+    for name in names:
+        name_parts = name.split()
+        fname = name_parts[0]
+        lname = name_parts[1]
+        resid = resid + 1
+        
+        users = "{\"user\":["
+        users += """
+            {
                 "firstname":"%(fname)s",
                 "lastname":"%(lname)s",
                 "email":"%(fname)s%(lname)s@utest.com",
@@ -122,13 +193,13 @@ def get_returned_user(fname, lname, active, resid="007"):
                 "active":"%(active)s",
                 "resourceIdentity":"%(resid)s",
                 "timeline":"..."
-            }
-        }
-    """ % {'fname': fname, 'lname': lname, 'active': active, 'resid': resid}
-    returnStr = ""
-    for line in user:
-        returnStr += line.strip()
-    return urllib.quote(returnStr)
+            },""" % {'fname': fname, 'lname': lname, 'active': active, 'resid': resid}
+
+    # we will have an extra comma at the end of the last item, so just clip it.    
+    users = users[:-1]
+    users += "]}"
+
+    return urllib.quote(users)
 
 def get_returned_roles(role_names):
     roles = "{\"role\":["
@@ -144,25 +215,12 @@ def get_returned_roles(role_names):
     roles = roles[:-1]
     roles += "]}"
     
-    returnStr = ""
-    for line in roles:
-        returnStr += line.strip()
-    return urllib.quote(returnStr)
+    return urllib.quote(roles)
 
-def get_returned_role(role_name):
-    role = """
-        {
-            "role": {
-                "description": "%(role_name)s",
-                "resourceIdentity": "24",
-                "timeline": "wha?"
-            }
-        }
-    """ % {'role_name': role_name}
-    returnStr = ""
-    for line in role:
-        returnStr += line.strip()
-    return urllib.quote(returnStr)
+
+def get_returned_assignments(assignment_names):
+    return get_returned_test_case(assignment_names)
+
 
 def get_returned_permissions(permission_names):
     perms = "{\"permission\":["
@@ -177,7 +235,34 @@ def get_returned_permissions(permission_names):
     perms = perms[:-1]
     perms += "]}"
     
-    returnStr = ""
-    for line in perms:
-        returnStr += line.strip()
-    return urllib.quote(returnStr)
+    return urllib.quote(perms)
+
+def get_returned_test_case(tc_descriptions):
+    testcases = "{\"testcase\":["
+    for tc_desc in tc_descriptions:
+        testcases += """
+            {
+                "productid":"1",
+                "maxattachmentsizeinmbytes":"10",
+                "maxnumberofattachments":"5",
+                "name":"Application login",
+                "description":"%(description)s",
+                "testcasesteps":{
+                    "testcasestep":{
+                        "stepnumber":"1",
+                        "name":"login name missing ",
+                        "instruction":"don't provide login name",
+                        "expectedresult":"validation message should appear",
+                        "estimatedtimeinmin":"1"
+                    }
+                },
+                "testcasestatusid":"2",
+                "majorversion":"1",
+                "minorversion":"1",
+                "latestversion":"true",
+                "resourceidentity":"...",
+                "timeline":"..."
+            },""" % {'description': tc_desc}
+    testcases = testcases[:-1]
+    testcases += "]}"
+    return urllib.quote(testcases)

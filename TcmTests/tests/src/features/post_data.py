@@ -27,10 +27,8 @@ def get_submit_user(fname, lname):
             }
         }
     """ % {'fname': fname, 'lname': lname}
-    returnStr = ""
-    for line in user:
-        returnStr += line.strip()
-    return returnStr.encode('ascii', 'xmlcharrefreplace')
+
+    return urllib.quote(user)
 
 def get_submit_role(rolename):
     user = """
@@ -40,10 +38,7 @@ def get_submit_role(rolename):
             }
         }
     """ % {'rolename': rolename}
-    returnStr = ""
-    for line in user:
-        returnStr += line.strip()
-    return returnStr.encode('ascii', 'xmlcharrefreplace')
+    return urllib.quote(user)
     
 def get_submit_permission(permission_name):
     perm = """
@@ -53,8 +48,28 @@ def get_submit_permission(permission_name):
             }
         }
     """ % {'permission_name': permission_name}
-    returnStr = ""
-    for line in perm:
-        returnStr += line.strip()
-    return urllib.quote(returnStr)
 
+    return urllib.quote(perm)
+
+def get_submit_test_case(description):
+    tc = """
+        {
+            "testcase":{
+                "productid":"1",
+                "maxattachmentsizeinmbytes":"10",
+                "maxnumberofattachments":"5",
+                "name":"Application login",
+                "description":"%(description)s",
+                "testcasesteps":{
+                    "testcasestep":{
+                        "stepnumber":"1",
+                        "name":"login name missing ",
+                        "instruction":"don't provide login name",
+                        "expectedresult":"validation message should appear",
+                        "estimatedtimeinmin":"1"
+                    }
+                }
+            }
+        }
+    """ % {'description': description}
+    return urllib.quote(tc)

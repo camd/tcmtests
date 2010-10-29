@@ -22,7 +22,7 @@ public class MockServlet extends HttpServlet {
     int currentStep = 0;
 
     public MockServlet() {
-        
+        System.out.println("Mock Servlet loaded");
     }
 
     protected void doGet(HttpServletRequest request,
@@ -30,12 +30,17 @@ public class MockServlet extends HttpServlet {
         
         // print out the request, so we can debug this on the server side.
         String reqStr = request.toString();
-        reqStr = reqStr.substring(0, reqStr.indexOf("@"));
-        System.out.println(reqStr);
+        int idx = reqStr.indexOf("@");
+        if (idx > -1) {
+            reqStr = reqStr.substring(0, idx);
+        }
+        System.out.println("Request: " + reqStr);
+        System.out.println("PathInfo: " + request.getPathInfo());
+        System.out.println("Req URI: " + request.getRequestURI());
         String requestBody = "Never set in this request";
         try {
-            if (request.getPathInfo() != null
-                    && request.getPathInfo().indexOf("/mockdata") > -1) {
+            if (request.getRequestURI() != null
+                    && request.getRequestURI().indexOf("/mockdata") > -1) {
 
                 System.out.println("\n\n*************");
                 System.out.println("*** Scenario:  " + request.getParameter("scenario"));

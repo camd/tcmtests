@@ -4,7 +4,7 @@ Feature: Users Roles
     We should implement Role management
 
     Scenario: Get list of roles
-        Given the system should have at least these roles:
+        Given at least these roles exist:
             | description |
             | Frame       |
             | Apple       |
@@ -14,7 +14,7 @@ Feature: Users Roles
         
     Scenario: Create a new Role and add Permission
         Given I am logged in as "Jedi Admin"
-        and user "Jedi Admin" has the role of ADMINISTRATOR
+        and user "Jedi Admin" has the role of "ADMINISTRATOR"
         When I create a new role of "Creationator"
         and add permission of "Spammer" to the role of "Creationator"
         Then role of "Creationator" has permission of "Spammer"
