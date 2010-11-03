@@ -12,6 +12,7 @@ import mock_scenario_data
 import post_data
 import urllib
 import urllib2
+from types import ListType
 
 host = "http://localhost:8080"
 
@@ -26,19 +27,13 @@ def get_connection():
 @before.each_scenario
 def setup_scenario_data(scenario):
     scenarioData = mock_scenario_data.get_scenario_data(scenario.name).strip()
-#    print scenarioData
-#    scenarioData = scenarioData.zfill(8000)
 
     headers = { 'content-Type':'text/plain',
             "Content-Length": "%d" % len(scenarioData) }
-#    headers = { 'content-Type':'application/x-www-form-urlencoded',
-#            "Content-Length": "%d" % len(scenarioData) }
-
 
     conn = get_connection()
     conn.request("POST", "/api/v1/mockdata?scenario=" + urllib.quote(scenario.name), "", headers)
 
-#    conn.send(urllib.urlencode({"data": scenarioData}))
     conn.send(scenarioData)
     conn.getresponse()
 
@@ -68,7 +63,7 @@ def user_foo_check_registration(step, name, registered):
         assert_equal(userJson.get("lastname"), names[1], "Last Name field didn't match")
 
 
-@step(u'submit information for "(.*)"')
+@step(u'create new user named "(.*)"')
 def submit_information_for_user_foo(step, name):
     names = name.split()
     
@@ -110,7 +105,7 @@ def activate_deactivate_user_foo(step, action, name):
     response = conn.getresponse()
     assert_equal(response.status, 200, action +"ed user")
 
-@step(u'"(.*)" has these roles:')
+@step(u'user "(.*)" has these roles:')
 def foo_has_these_roles(step, name):
     user_id = get_user_resid(name)
     conn = get_connection()
@@ -166,7 +161,7 @@ def foo_has_these_assignments(step, name):
 '''
 
 
-@step(u'logged in as "(.*)"')
+@step(u'logged in as user "(.*)"')
 def logged_in_as_user_foo(step, name):
     conn = get_connection()
     conn.request("GET", "/api/v1/users/current")
@@ -179,11 +174,11 @@ def logged_in_as_user_foo(step, name):
     assert_equal(thisUser.get("firstname"), names[0], "First Name field didn't match")
     assert_equal(thisUser.get("lastname"), names[1], "Last Name field didn't match")
 
-@step(u'"(.*)" has the role of "(.*)"')
+@step(u'user "(.*)" has the role of "(.*)"')
 def user_foo_has_the_role_of_bar(step, name, role):
     user_role_check(name, role, True, "should have role of " + role)
 
-@step(u'"(.*)" does not already have the role of "(.*)"')
+@step(u'user "(.*)" does not already have the role of "(.*)"')
 def foo_does_not_already_have_the_role_of_bar(step, name, role):
     user_role_check(name, role, False, "should not have role of " + role)
 
@@ -266,7 +261,7 @@ def add_permission_foo_to_role_bar(step, permission, role):
 
 
 @step(u'role of "(.*)" has permission of "(.*)"')
-def then_role_foo_has_permission_of_bar(step, role, permission):
+def role_foo_has_permission_of_bar(step, role, permission):
     # This takes 2 requests to complete
     #    1: get the id of the role
     #    2: check that role has that permission
@@ -389,6 +384,105 @@ def test_case_exists_with_description_foo(step, description):
     assert_equal(found, True, "looking for testcase desc of " + description)
 
 
+'''
+######################################################################
+
+                     COMPANY STEPS
+
+######################################################################
+'''
+
+@step(u'company "(.*)" (does not exist|exists)')
+def check_company_foo_existence(step, company_name, existence):
+        
+    company_name_enc = urllib.quote(company_name)
+    conn = get_connection()
+    conn.request("GET", "/api/v1/companies?name=" + company_name_enc)
+    response = conn.getresponse()
+
+    if existence.strip() == "does not exist":
+        assert_equal(response.status, 404, "company existence")
+    else:
+        assert_equal(response.status, 200, "company existence")
+
+        companyJson = get_single_item(response, "company")
+        assert_equal(companyJson.get("name"), company_name, "Company name match")
+
+
+
+@step(u'add a new company with name "(.*)"')
+def add_a_new_company_with_name_foo(step, company_name):
+    conn = get_connection()
+    post_payload = post_data.get_submit_company(company_name)
+    headers = { 'content-Type':'text/xml',
+            "Content-Length": "%d" % len(post_payload) }
+
+    conn.request("POST", "/api/v1/companies", "", headers)
+    conn.send(post_payload)
+    response = conn.getresponse()
+    assert_equal(response.status, 200, "create new testcase")
+
+
+'''
+######################################################################
+
+                     ENVIRONMENT STEPS
+
+######################################################################
+'''
+
+@step(u'environment "(.*)" (does not exist|exists)')
+def check_environment_foo_existence(step, environment_name, existence):
+        
+    environment_name_enc = urllib.quote(environment_name)
+    conn = get_connection()
+    conn.request("GET", "/api/v1/environments?name=" + environment_name_enc)
+    response = conn.getresponse()
+
+    if existence.strip() == "does not exist":
+        assert_equal(response.status, 404, "environment existence")
+    else:
+        assert_equal(response.status, 200, "environment existence")
+
+        environmentJson = get_single_item(response, "environment")
+        assert_equal(environmentJson.get("name"), environment_name, "environment name match")
+
+
+
+@step(u'add a new environment with name "(.*)"')
+def add_a_new_environment_with_name_foo(step, environment_name):
+    conn = get_connection()
+    post_payload = post_data.get_submit_environment(environment_name)
+    headers = { 'content-Type':'text/xml',
+            "Content-Length": "%d" % len(post_payload) }
+
+    conn.request("POST", "/api/v1/testcases", "", headers)
+    conn.send(post_payload)
+    response = conn.getresponse()
+    assert_equal(response.status, 200, "create new environment")
+
+'''
+    @todo: we should make this DRY with the rest of the existence methods
+'''
+@step(u'environment type "(.*)" (does not exist|exists)')
+def check_environment_type_foo_existence(step, env_type_name, existence):
+    check_existence(step, "environmenttypes", "name", env_type_name, "environmentType", existence)
+
+
+'''
+    @todo: we should make this DRY with the rest of the existence methods
+'''
+@step(u'add a new environment type with name "(.*)"')
+def add_a_new_environment_type_with_name_foo(step, env_type_name):
+    conn = get_connection()
+    post_payload = post_data.get_submit_environment(env_type_name)
+    headers = { 'content-Type':'text/xml',
+            "Content-Length": "%d" % len(post_payload) }
+
+    conn.request("POST", "/api/v1/environmenttypes", "", headers)
+    conn.send(post_payload)
+    response = conn.getresponse()
+    assert_equal(response.status, 200, "create new environment type")
 
 
 
@@ -400,6 +494,21 @@ def test_case_exists_with_description_foo(step, description):
 ######################################################################
 '''
 
+def check_existence(step, uri, arg_name, arg_value, obj_name, existence):
+    arg_value_enc = urllib.quote(arg_value)
+    conn = get_connection()
+    conn.request("GET", "/api/v1/" + uri + "?" + arg_name + "=" + arg_value_enc)
+    response = conn.getresponse()
+
+    if existence.strip() == "does not exist":
+        assert_equal(response.status, 404, uri + " existence")
+    else:
+        assert_equal(response.status, 200, uri + " existence")
+
+        environmentJson = get_single_item(response, obj_name)
+        assert_equal(environmentJson.get(arg_name), arg_value, obj_name + " name match")
+
+
 def get_single_item(response, type):
     '''
         Expect the response to hold an array of 1 and only 1 item.  Throw an error
@@ -407,9 +516,14 @@ def get_single_item(response, type):
     '''
     respJson = json.loads(response.read())
     # in this case, we only care about the first returned item in this array
+    
     arrayJson = respJson.get(type)
-    assert_equal(len(arrayJson), 1, "should only have 1 item of type: " + type)
-    return arrayJson[0]
+    assert_not_equal(arrayJson, None, "response object didn't have our expected type of " + type + ":\n" + json.dumps(respJson))
+    if isinstance(arrayJson, ListType):
+        assert_equal(len(arrayJson), 1, "should only have 1 item of type: " + type)
+        return arrayJson[0]
+    else:
+        return arrayJson
 
 
 def get_user_resid(name):

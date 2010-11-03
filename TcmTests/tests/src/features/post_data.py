@@ -73,3 +73,51 @@ def get_submit_test_case(description):
         }
     """ % {'description': description}
     return urllib.quote(tc)
+
+def get_submit_company(co_name):
+    company = """
+        {
+            "company":{
+                "name": "%(co_name)s",
+                "phone": "617-417-0593",
+                "address": "31 lakeside drive",
+                "city": "Boston",
+                "zip": "01721",
+                "companyUrl": "http//www.utest.com",
+                "resourceIdentity": "5",
+                "timeline": "bleh"
+            }
+        }""" % {'co_name': co_name}
+    return urllib.quote(company)
+
+
+def get_submit_environment(env_name):
+    environment = """
+        {
+            "environment": {
+                    "name": "%(env_name)s",
+                    "localeCode": "en_US",
+                    "sortOrder": "0",
+                    "environmentTypeId": "1",
+                    "resourceIdentity": "...",
+                    "timeline": "..."
+            }
+        }""" % {'env_name': env_name}
+    return urllib.quote(environment)
+
+
+def get_submit_environment_type(envtype_name):
+    envtype = """
+        {
+            "environmentType": {
+                "name": "%(envtype_name)s",
+                "localeCode": "en_US",
+                "sortOrder": "0",
+                "resourceIdentity": "010",
+                "timeline": "..."
+            }
+        }""" % {'envtype_name': envtype_name}
+    return urllib.quote(envtype)
+
+
+

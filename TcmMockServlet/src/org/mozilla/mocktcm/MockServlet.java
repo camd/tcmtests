@@ -29,15 +29,15 @@ public class MockServlet extends HttpServlet {
             HttpServletResponse response) throws ServletException, IOException {
         
         // print out the request, so we can debug this on the server side.
-        String reqStr = request.toString();
-        int idx = reqStr.indexOf("@");
-        if (idx > -1) {
-            reqStr = reqStr.substring(0, idx);
+        String reqStr = request.getRequestURI();
+        String reqQuery = request.getQueryString();
+        if (reqQuery != null) {
+            reqStr = reqStr + "?" + reqQuery;
         }
+
         System.out.println("Request: " + reqStr);
-        System.out.println("PathInfo: " + request.getPathInfo());
-        System.out.println("Req URI: " + request.getRequestURI());
         String requestBody = "Never set in this request";
+
         try {
             if (request.getRequestURI() != null
                     && request.getRequestURI().indexOf("/mockdata") > -1) {
@@ -54,9 +54,9 @@ public class MockServlet extends HttpServlet {
 //                    requestBody = dataParam[0];
 //                }
                 
-                System.out.println(requestBody);
-                System.out.println("Intended Size: " + request.getContentLength());
-                System.out.println("Actual Size: " + requestBody.length());
+//                System.out.println(requestBody);
+//                System.out.println("Intended Size: " + request.getContentLength());
+//                System.out.println("Actual Size: " + requestBody.length());
                 
                 steps = gson.fromJson(requestBody, Step[].class);
                 currentStep = 0;
@@ -64,17 +64,49 @@ public class MockServlet extends HttpServlet {
             // Return the next expected value for the current steps
             else if (steps != null && currentStep < steps.length) {
                 response.setContentType("text/xml");               
-                response.setStatus(steps[currentStep].status);
-                /*
-                 * The expected response is sent as JSON within a field of JSON.  So 
-                 * I had to encode the embedded JSON.  However, when I return it, I want 
-                 * to send it as decoded JSON, so it looks normal and is parse-able.
-                 * Therefore, I must decode it here.
-                 */
-                String responseStr = URLDecoder.decode(steps[currentStep].response, "UTF-8");
-                System.out.println(responseStr);
-                response.getWriter().println(responseStr);
-                currentStep++;
+                
+                // if the request doesn't match the expected request in this set of steps, then return
+                // an error 401 - Bad Request
+                if (!reqStr.equals(steps[currentStep].request)) {
+                    response.setStatus(401);
+                    response.getWriter().println("Expected request of: " + steps[currentStep].request);
+                    System.out.println("Wrong request:  Error 401");
+                    System.out.println("          exp:  " + steps[currentStep].request);
+                    System.out.println("          act:  " + reqStr);
+                    System.out.println("Perhaps you need to add this to the mock data, if this request was right:");
+                    System.out.println(", \"request\": \"" + reqStr + "\"");
+                }
+                else {
+                    response.setStatus(steps[currentStep].status);
+                    /*
+                     * The expected response is sent as JSON within a field of JSON.  So 
+                     * I had to encode the embedded JSON.  However, when I return it, I want 
+                     * to send it as decoded JSON, so it looks normal and is parse-able.
+                     * Therefore, I must decode it here.
+                     */
+                    String responseStr = URLDecoder.decode(steps[currentStep].response, "UTF-8");
+//                    System.out.println(responseStr);
+                    response.getWriter().println(responseStr);
+                    
+                    currentStep++;
+                    // we need to empty the steps if this was the last one
+                    if (currentStep == steps.length) {
+                        steps = null;
+                    }
+                }
+
+            }
+            // no steps were set, but we got a request.  make a request string for making mock data
+            else if (steps == null) {
+                System.out.println("Unexpected Request.  No steps currently set.");
+                System.out.println("Perhaps the mock data should look like this:");
+                System.out.println("{\"status\":   \"" + 200 + 
+                                "\", \"request\":  \"" + reqStr + 
+                                "\", \"response\": \"xxxresponse" + 
+                                "\", \"comment\":  \"xxxcomment" + 
+                                "\"}");
+                
+                
             }
             // request not handled, just return error
             else {
@@ -140,7 +172,10 @@ public class MockServlet extends HttpServlet {
  */
 class Step {
     int status;
+    String request;
     String response;
+    String comment;
+    
 
     Step() {
     }
