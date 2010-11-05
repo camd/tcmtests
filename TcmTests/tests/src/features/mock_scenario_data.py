@@ -1,5 +1,5 @@
-'''
 ############################################################################
+'''
 
                            MOCK DATA GENERATOR
 
@@ -30,174 +30,384 @@ def get_scenario_data(scenarioName):
         It's simple, anyway.  I'm just concerned with how well it will scale.  
     '''
     
-    data = ""
+    steps = ""
     if scenarioName == "Register a new user":
-        data = """
+        steps = \
             [
-                {"status": "404", "request": "/api/v1/users?firstName=Jedi&lastName=Jones", "response": "No response expected", "comment": "User does not exist"},
-                {"status": "200", "request": "/api/v1/users",                               "response": "POST, w/o response",   "comment": "Posting the user data"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Jones", "response": "%(activeFalse)s",      "comment": "Check user exists, but not active"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Jones", "response": "%(activeFalse)s",      "comment": "request it to be activated"},
-                {"status": "200","response": "%(activeTrue)s",       "comment": "expect it's now active"}
+               {"comment": "User does not exist", 
+                "request": "/api/v1/users?firstName=Jedi&lastName=Jones", 
+                "response": "No response expected", 
+                "status": "404"
+                },
+               {"comment": "Posting the user data", 
+                "request": "/api/v1/users",                               
+                "response": "POST, w/o response",   
+                "status": "200"
+                },
+               {"comment": "Check user exists, but not active", 
+                "request": "/api/v1/users?firstName=Jedi&lastName=Jones", 
+                "response": get_returned_user(["Jedi Jones"], "false"),      
+                "status": "200"
+                },
+               {"comment": "request it to be activated", 
+                "request": "/api/v1/users?firstName=Jedi&lastName=Jones", 
+                "response": get_returned_user(["Jedi Jones"], "false"),      
+                "status": "200"
+                },
+               {"comment": "expect it's now active",
+                "request": "/api/v1/users?firstName=Jedi&lastName=Jones", 
+                "response": get_returned_user(["Jedi Jones"], "true"),
+                "status": "200"       
+                }
             ]
-        """ % { 'activeFalse': get_returned_user(["Jedi Jones"], "false"),
-                'activeTrue': get_returned_user(["Jedi Jones"], "true")}
         
     elif scenarioName == "Activate a Non Active user":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=NotActive","response": "%(activeFalse)s"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=NotActive","response": "%(activeFalse)s"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=NotActive","response": "%(activeFalse)s"},
-                {"status": "200", "request": "/api/v1/users/8/activate","response": "POST, no return"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=NotActive","response": "%(activeTrue)s"}
+                {"comment": "check user registered", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=NotActive",
+                 "response": get_returned_user(["Jedi NotActive"], "false"),
+                 "status": "200"
+                 },
+                {"comment": "get user id", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=NotActive",
+                 "response": get_returned_user(["Jedi NotActive"], "false"),
+                 "status": "200"
+                 },
+                {"comment": "check user active status false", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=NotActive",
+                 "response": get_returned_user(["Jedi NotActive"], "false"),
+                 "status": "200"
+                 },
+                {"comment": "set user active", 
+                 "request": "/api/v1/users/8/activate",
+                 "response": "POST, no return",
+                 "status": "200"
+                 },
+                {"comment": "check user active status true", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=NotActive",
+                 "response": get_returned_user(["Jedi NotActive"], "true"),
+                 "status": "200"
+                 }
             ]
-        """ % { 'activeFalse': get_returned_user(["Jedi NotActive"], "false"),
-                'activeTrue': get_returned_user(["Jedi NotActive"], "true")}
     
     elif scenarioName == "Deactivate an Active user":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Active","response": "%(activeTrue)s"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Active","response": "%(activeTrue)s"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Active","response": "%(activeTrue)s"},
-                {"status": "200", "request": "/api/v1/users/8/activate",                    "response": "POST, w/o response"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Active","response": "%(activeFalse)s"}
+                {"comment": "check user registered", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Active",
+                 "response": get_returned_user(["Jedi Active"], "true"),
+                 "status": "200"
+                 },
+                {"comment": "get user id", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Active",
+                 "response": get_returned_user(["Jedi Active"], "true"),
+                 "status": "200"
+                 },
+                {"comment": "check user active status true", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Active",
+                 "response": get_returned_user(["Jedi Active"], "true"),
+                 "status": "200"
+                 },
+                {"comment": "set user deactivated", 
+                 "request": "/api/v1/users/8/activate",                    
+                 "response": "POST, w/o response",
+                 "status": "200"
+                 },
+                {"comment": "check user active status false", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Active",
+                 "response": get_returned_user(["Jedi Active"], "false"),
+                 "status": "200"
+                 }
             ]
-        """ % { 'activeFalse': get_returned_user(["Jedi Active"], "false"),
-                'activeTrue': get_returned_user(["Jedi Active"], "true")}
         
     elif scenarioName == "Create a new Role and add Permission":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users/current",                       "response": "%(ourAdminUser)s",   "comment": "logged in as user"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Admin", "response": "%(ourAdminUser)s",   "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/roles",                       "response": "%(users_roles)s",    "comment": "check users roles"},
-                {"status": "200", "request": "/api/v1/roles",                               "response": "POST, w/o response", "comment": "create a new role"},
-                {"status": "200", "request": "/api/v1/roles?description=Creationator",      "response": "%(new_role)s",       "comment": "get id of role"},
-                {"status": "200", "request": "/api/v1/roles/24/permissions",                "response": "POST, w/o response", "comment": "add permission to role"},
-                {"status": "200", "request": "/api/v1/roles?description=Creationator",      "response": "%(new_role)s",       "comment": "get id of role"},
-                {"status": "200", "request": "/api/v1/roles/24/permissions",                "response": "%(permissions)s",    "comment": "get permissions for new role"}
+                {"comment": "logged in as user", 
+                 "request": "/api/v1/users/current",                       
+                 "response": get_returned_user(["Jedi Admin"], "true"),   
+                 "status": "200"
+                 },
+                {"comment": "get id of user", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Admin", 
+                 "response": get_returned_user(["Jedi Admin"], "true"),   
+                 "status": "200"
+                 },
+                {"comment": "check users roles", 
+                 "request": "/api/v1/users/8/roles",                       
+                 "response": get_returned_roles(["ADMINISTRATOR"]),    
+                 "status": "200"
+                 },
+                {"comment": "create a new role", 
+                 "request": "/api/v1/roles",                               
+                 "response": "POST, w/o response", 
+                 "status": "200"
+                 },
+                {"comment": "get id of role", 
+                 "request": "/api/v1/roles?description=Creationator",      
+                 "response": get_returned_roles(["Creationator"]),       
+                 "status": "200"
+                 },
+                {"comment": "add permission to role", 
+                 "request": "/api/v1/roles/24/permissions",                
+                 "response": "POST, w/o response", 
+                 "status": "200"
+                 },
+                {"comment": "get id of role", 
+                 "request": "/api/v1/roles?description=Creationator",      
+                 "response": get_returned_roles(["Creationator"]),       
+                 "status": "200"
+                 },
+                {"comment": "get permissions for new role", 
+                 "request": "/api/v1/roles/24/permissions",                
+                 "response": get_returned_permissions(["Spammer"]),    
+                 "status": "200"
+                 }
             ]
-        """ % { 'ourAdminUser': get_returned_user(["Jedi Admin"], "true"),
-                'users_roles': get_returned_roles(["ADMINISTRATOR"]), 
-                'new_role': get_returned_roles(["Creationator"]),
-                'permissions': get_returned_permissions(["Spammer"])}
         
     elif scenarioName == "Get list of roles":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/roles"                   ,"response": "%(roles)s",       "comment": "get list of roles"},
-                {"status": "200", "request": "/api/v1/roles?sortDirection=ASC" ,"response": "%(asc_roles)s",   "comment": "get list of ASC roles"},
-                {"status": "200", "request": "/api/v1/roles?sortDirection=DESC","response": "%(desc_roles)s",  "comment": "get list of DESC roles"}
+                {"comment": "get list of roles", 
+                 "request": "/api/v1/roles"                   ,
+                 "response": get_returned_roles(["Apple", "Zipper", "Frame"]),       
+                 "status": "200"
+                 },
+                {"comment": "get list of ASC roles", 
+                 "request": "/api/v1/roles?sortDirection=ASC" ,
+                 "response": get_returned_roles(["Apple", "Frame", "Zipper"]),   
+                 "status": "200"
+                 },
+                {"comment": "get list of DESC roles", 
+                 "request": "/api/v1/roles?sortDirection=DESC",
+                 "response": get_returned_roles(["Zipper", "Frame", "Apple"]),  
+                 "status": "200"
+                 }
             ]
-        """ % { 'roles': get_returned_roles(["Apple", "Zipper", "Frame"]),
-                'asc_roles': get_returned_roles(["Apple", "Frame", "Zipper"]),
-                'desc_roles': get_returned_roles(["Zipper", "Frame", "Apple"])}
-    
+
     elif scenarioName == "Create a new Test Case":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users/current",                         "response": "%(our_user)s",       "comment": "logged in as user"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Creator", "response": "%(our_user)s",       "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/roles",                         "response": "%(users_roles)s",    "comment": "check users roles"},
-                {"status": "200", "request": "/api/v1/testcases",                             "response": "POST, w/o response", "comment": "create a new test case"},
-                {"status": "200", "request": "/api/v1/testcases?description=Testing%%20mic%%20%%231.%%20%%20Isn%%27t%%20this%%20a%%20lot%%20of%%20fun.", "response": "%(new_test_case)s",  "comment": "get new test case data"}
+                {"comment": "logged in as user", 
+                 "request": "/api/v1/users/current",                         
+                 "response": get_returned_user(["Jedi Creator"], "true"),       
+                 "status": "200"
+                 },
+                {"comment": "get id of user", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Creator", 
+                 "response": get_returned_user(["Jedi Creator"], "true"),       
+                 "status": "200"
+                 },
+                {"comment": "check users roles", 
+                 "request": "/api/v1/users/8/roles",                         
+                 "response": get_returned_roles(["TEST_CREATOR"]),    
+                 "status": "200"
+                 },
+                {"comment": "create a new test case", 
+                 "request": "/api/v1/testcases",                             
+                 "response": "POST, w/o response", 
+                 "status": "200"
+                 },
+                {"comment": "get new test case data", 
+                 "request": "/api/v1/testcases?description=Testing%20mic%20%231.%20%20Isn%27t%20this%20a%20lot%20of%20fun.", 
+                 "response": get_returned_test_case(["Testing mic #1.  Isn't this a lot of fun."]),  
+                 "status": "200"
+                 }
             ]
-        """ % { 'our_user': get_returned_user(["Jedi Creator"], "true"),
-                'users_roles': get_returned_roles(["TEST_CREATOR"]),
-                'new_test_case': get_returned_test_case(["Testing mic #1.  Isn't this a lot of fun."]) 
-              }
 
     elif scenarioName == "Assign a Role to a User":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Roller","response": "%(our_user)s",       "comment": "Given user Jedi Roller has active status true"},
-                {"status": "200", "request": "/api/v1/roles",                               "response": "%(roles)s",          "comment": "And the role of CHIPPER exists"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Roller","response": "%(our_user)s",       "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/roles"                       ,"response": "%(old_roles)s",      "comment": "And Jedi Roller does not already have the role of CHIPPER"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Roller","response": "%(our_user)s",       "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/roles"                       ,"response": "POST, w/o response", "comment": "When I add role of CHIPPER to user Jedi Roller"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Roller","response": "%(our_user)s",       "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/roles"                       ,"response": "%(new_roles)s",      "comment": "Then Jedi Roller has the role of CHIPPER"}
+                {"comment": "Given user Jedi Roller has active status true", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Roller",
+                 "response": get_returned_user(["Jedi Roller"], "true"), 
+                 "status": "200"
+                 },
+                {"comment": "And the role of CHIPPER exists", 
+                 "request": "/api/v1/roles",                               
+                 "response": get_returned_roles(["CHIPPER"]), 
+                 "status": "200"
+                 },
+                {"comment": "get id of user", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Roller",
+                 "response": get_returned_user(["Jedi Roller"], "true"), 
+                 "status": "200"
+                 },
+                {"comment": "And Jedi Roller does not already have the role of CHIPPER", 
+                 "request": "/api/v1/users/8/roles"                       ,
+                 "response": get_returned_roles(["MASHER", "SMASHER"]), 
+                 "status": "200"     
+                 },
+                {"comment": "get id of user", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Roller",
+                 "response": get_returned_user(["Jedi Roller"], "true"), 
+                 "status": "200"      
+                 },
+                {"comment": "When I add role of CHIPPER to user Jedi Roller", 
+                 "request": "/api/v1/users/8/roles"                       ,
+                 "response": "POST, w/o response", 
+                 "status": "200"
+                 },
+                {"comment": "get id of user", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Roller",
+                 "response": get_returned_user(["Jedi Roller"], "true"), 
+                 "status": "200"      
+                 },
+                {"comment": "Then Jedi Roller has the role of CHIPPER", 
+                 "request": "/api/v1/users/8/roles"                       ,
+                 "response": get_returned_roles(["MASHER", "SMASHER", "CHIPPER"]), 
+                 "status": "200"     
+                 }
             ]
-        """ % { 'our_user': get_returned_user(["Jedi Roller"], "true"),
-                'roles': get_returned_roles(["CHIPPER"]), 
-                'old_roles': get_returned_roles(["MASHER", "SMASHER"]), 
-                'new_roles': get_returned_roles(["MASHER", "SMASHER", "CHIPPER"]) 
-            }
 
     elif scenarioName == "Check Roles of a User":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Roller","response": "%(our_user)s",       "comment": "Given user Jedi Roller has active status true"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Roller","response": "%(our_user)s",       "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/roles"                       ,"response": "%(roles)s",          "comment": "Then Jedi Roller has the role of MASHER and SMASHER"}
+                {"comment": "Given user Jedi Roller has active status true", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Roller",
+                 "response": get_returned_user(["Jedi Roller"], "true"), 
+                 "status": "200"      
+                 },
+                {"comment": "get id of user", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Roller",
+                 "response": get_returned_user(["Jedi Roller"], "true"), 
+                 "status": "200"      
+                 },
+                {"comment": "Then Jedi Roller has the role of MASHER and SMASHER", 
+                 "request": "/api/v1/users/8/roles",
+                 "response": get_returned_roles(["MASHER", "SMASHER"]), 
+                 "status": "200"         
+                 }
             ]
-        """ % { 'our_user': get_returned_user(["Jedi Roller"], "true"),
-                'roles': get_returned_roles(["MASHER", "SMASHER"])
-              }
                
     elif scenarioName == "Check the Assignments of a User":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Assigned","response": "%(our_user)s",       "comment": "Given user has active status true"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Assigned","response": "%(our_user)s",       "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/assignments"                   ,"response": "%(assignments)s",    "comment": "Then the user has the listed assignments"}
+                {"comment": "Given user has active status true",
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Assigned",
+                 "response": get_returned_user(["Jedi Assigned"], "true"), 
+                 "status": "200"
+                 },
+                {"comment": "get id of user",
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Assigned",
+                 "response": get_returned_user(["Jedi Assigned"], "true"), 
+                 "status": "200"
+                 },
+                {"comment": "Then the user has the listed assignments",
+                 "request": "/api/v1/users/8/assignments",
+                 "response": get_returned_assignments(["What the cat dragged in", "Where I put the keys"]), 
+                 "status": "200" 
+                 }
             ]
-        """ % { 'our_user': get_returned_user(["Jedi Assigned"], "true"),
-                'assignments': get_returned_assignments(["What the cat dragged in", "Where I put the keys"])
-              }
         
     elif scenarioName == "Create a new Company":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users/current",                         "response": "%(our_user)s",       "comment": "logged in as user"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Creator", "response": "%(our_user)s",       "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/roles",                         "response": "%(users_roles)s",    "comment": "check users roles"},
-                {"status": "404", "request": "/api/v1/companies?name=Massive%%20Dynamic",     "response": "%(no_companies)s",   "comment": "check company does not exist"},
-                {"status": "200", "request": "/api/v1/companies",                             "response": "POST, w/o response", "comment": "create a new company"},
-                {"status": "200", "request": "/api/v1/companies?name=Massive%%20Dynamic",     "response": "%(exist_companies)s","comment": "check now company exists"}
+                {"comment": "logged in as user",
+                 "request": "/api/v1/users/current",                          
+                 "response": get_returned_user(["Jedi Creator"], "true"), 
+                 "status": "200"       
+                 },
+                {"comment": "get id of user",
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Creator",  
+                 "response": get_returned_user(["Jedi Creator"], "true"), 
+                 "status": "200"       
+                 },
+                {"comment": "check users roles",
+                 "request": "/api/v1/users/8/roles",                          
+                 "response": get_returned_roles(["COMPANY_CREATOR"]), 
+                 "status": "200"    
+                 },
+                {"comment": "check company does not exist",
+                 "request": "/api/v1/companies?name=Massive%20Dynamic",     
+                 "response": get_returned_companies([]), 
+                 "status": "404"   
+                 },
+                {"comment": "create a new company",
+                 "request": "/api/v1/companies",                             
+                 "response": "POST, w/o response",
+                 "status": "200" 
+                 },
+                {"comment": "check now company exists", 
+                 "request": "/api/v1/companies?name=Massive%20Dynamic",     
+                 "response": get_returned_companies(["Massive Dynamic"]), 
+                 "status": "200"
+                 }
             ]
-        """ % { 'our_user': get_returned_user(["Jedi Creator"], "true"),
-                'users_roles': get_returned_roles(["COMPANY_CREATOR"]),
-                'no_companies': get_returned_companies([]),
-                'exist_companies': get_returned_companies(["Massive Dynamic"]) 
-              }
+
         
     elif scenarioName == "Create a new Environment":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users/current",                         "response": "%(our_user)s",       "comment": "logged in as user"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Creator", "response": "%(our_user)s",       "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/roles",                         "response": "%(users_roles)s",    "comment": "check users roles"},
-                {"status": "404", "request": "/api/v1/companies?name=Walter%%27s%%20Lab",     "response": "%(no_envs)s",        "comment": "check environment does not exist"},
-                {"status": "200", "request": "/api/v1/companies",                             "response": "POST, w/o response", "comment": "create a new environment"},
-                {"status": "200", "request": "/api/v1/companies?name=Walter%%27s%%20Lab",     "response": "%(exist_envs)s",     "comment": "check now environment exists"}
+                {"comment": "logged in as user", 
+                 "request": "/api/v1/users/current",                         
+                 "response": get_returned_user(["Jedi Creator"], "true"), 
+                 "status": "200"      
+                 },
+                {"comment": "get id of user", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Creator", 
+                 "response": get_returned_user(["Jedi Creator"], "true"), 
+                 "status": "200"      
+                 },
+                {"comment": "check users roles", 
+                 "request": "/api/v1/users/8/roles",                         
+                 "response": get_returned_roles(["ENVIRONMENT_CREATOR"]),  
+                 "status": "200"  
+                 },
+                {"comment": "check environment does not exist", 
+                 "request": "/api/v1/companies?name=Walter%%27s%%20Lab",     
+                 "response": get_returned_environments([]), 
+                 "status": "404"        
+                 },
+                {"comment": "create a new environment", 
+                 "request": "/api/v1/companies",                             
+                 "response": "POST, w/o response", 
+                 "status": "200"
+                 },
+                {"comment": "check now environment exists", 
+                 "request": "/api/v1/companies?name=Walter%%27s%%20Lab",     
+                 "response": get_returned_environments(["Walter's Lab"]),  
+                 "status": "200"   
+                 }
             ]
-        """ % { 'our_user': get_returned_user(["Jedi Creator"], "true"),
-                'users_roles': get_returned_roles(["ENVIRONMENT_CREATOR"]),
-                'no_envs': get_returned_environments([]),
-                'exist_envs': get_returned_environments(["Walter's Lab"]) 
-              }
 
     elif scenarioName == "Create a new Environment Type":
-        data = """
+        steps = \
             [
-                {"status": "200", "request": "/api/v1/users/current",                         "response": "%(our_user)s",       "comment": "logged in as user"},
-                {"status": "200", "request": "/api/v1/users?firstName=Jedi&lastName=Creator", "response": "%(our_user)s",       "comment": "get id of user"},
-                {"status": "200", "request": "/api/v1/users/8/roles",                         "response": "%(users_roles)s",    "comment": "check users roles"},
-                {"status": "404", "request": "/api/v1/companies?name=Laboratory",             "response": "%(no_companies)s",   "comment": "check environment type does not exist"},
-                {"status": "200", "request": "/api/v1/companies",                             "response": "POST, w/o response", "comment": "create a new environment type"},
-                {"status": "200", "request": "/api/v1/companies?name=Laboratory",             "response": "%(exist_companies)s","comment": "check now environment type exists"}
+                {"comment": "logged in as user", 
+                 "request": "/api/v1/users/current",                         
+                 "response": get_returned_user(["Jedi Creator"], "true"),  
+                 "status": "200"     
+                 },
+                {"comment": "get id of user", 
+                 "request": "/api/v1/users?firstName=Jedi&lastName=Creator", 
+                 "response": get_returned_user(["Jedi Creator"], "true"),  
+                 "status": "200"     
+                 },
+                {"comment": "check users roles", 
+                 "request": "/api/v1/users/8/roles",                         
+                 "response": get_returned_roles(["ENVIRONMENT_CREATOR"]),  
+                 "status": "200"  
+                 },
+                {"comment": "check environment type does not exist", 
+                 "request": "/api/v1/companies?name=Laboratory",             
+                 "response": get_returned_environment_type([]),  
+                 "status": "404" 
+                 },
+                {"comment": "create a new environment type", 
+                 "request": "/api/v1/companies",                             
+                 "response": "POST, w/o response", 
+                 "status": "200"
+                 },
+                {"comment": "check now environment type exists", 
+                 "request": "/api/v1/companies?name=Laboratory",             
+                 "response": get_returned_environment_type(["Laboratory"]),
+                 "status": "200"
+                 }
             ]
-        """ % { 'our_user': get_returned_user(["Jedi Creator"], "true"),
-                'users_roles': get_returned_roles(["ENVIRONMENT_CREATOR"]),
-                'no_companies': get_returned_environment_type([]),
-                'exist_companies': get_returned_environment_type(["Laboratory"]) 
-              }
 
-
+    data = json.dumps(steps)
     return data
 
 
@@ -222,50 +432,42 @@ def get_returned_user(names, active, resid=7):
         value of "active" for now.  May need to change that in the future.
     '''  
 
-    users = "{\"user\":["
+    user_array = []
     for name in names:
         name_parts = name.split()
         fname = name_parts[0]
         lname = name_parts[1]
         resid = resid + 1
         
-        users += """
-            {
-                "firstname":"%(fname)s",
-                "lastname":"%(lname)s",
-                "email":"%(fname)s%(lname)s@utest.com",
-                "loginname":"%(fname)s%(lname)s",
-                "password":"%(fname)s%(lname)s123",
+        obj = {
+                "firstname":fname,
+                "lastname":lname,
+                "email":fname + lname + "@utest.com",
+                "loginname":fname + lname,
+                "password":fname + lname + "123",
                 "companyid":1,
                 "communitymember":"false",
-                "active":"%(active)s",
-                "resourceIdentity":"%(resid)s",
+                "active":active,
+                "resourceIdentity":resid,
                 "timeline":"..."
-            },""" % {'fname': fname, 'lname': lname, 'active': active, 'resid': resid}
+        }
+        user_array.append(obj)
+    
+    users = {"user": user_array}
+    return urllib.quote(json.dumps(users))
 
-    # we will have an extra comma at the end of the last item, so just clip it.    
-    if len(names) > 0:
-        users = users[:-1]
-    users += "]}"
-
-    return urllib.quote(users)
 
 def get_returned_roles(role_names):
-    roles = "{\"role\":["
+    role_array = []
     for role_name in role_names:
-        roles += """
-            {
-                "description": "%(role_name)s",
+        obj = {
+                "description": role_name,
                 "resourceIdentity": "24",
                 "timeline": "wha?"
-            },""" % {'role_name': role_name}
-        
-    # we will have an extra comma at the end of the last item, so just clip it.    
-    if len(role_names) > 0:
-        roles = roles[:-1]
-    roles += "]}"
-    
-    return urllib.quote(roles)
+        }
+        role_array.append(obj)
+    roles = {"role": role_array}
+    return urllib.quote(json.dumps(roles))
 
 
 def get_returned_assignments(assignment_names):
@@ -273,31 +475,26 @@ def get_returned_assignments(assignment_names):
 
 
 def get_returned_permissions(permission_names):
-    perms = "{\"permission\":["
+    perm_array = []
     for perm_name in permission_names:
-        perms += """
-            {
-                "description": "%(perm_name)s",
+        obj = {
+                "description": perm_name,
                 "resourceIdentity": "24"
-            },""" % {'perm_name': perm_name}
-        
-    # we will have an extra comma at the end of the last item, so just clip it.    
-    if len(permission_names) > 0:
-        perms = perms[:-1]
-    perms += "]}"
+        }
+        perm_array.append(obj)
     
-    return urllib.quote(perms)
+    permissions = {"permission": perm_array}
+    return urllib.quote(json.dumps(permissions))
 
 def get_returned_test_case(tc_descriptions):
-    testcases = "{\"testcase\":["
+    tc_array = []
     for tc_desc in tc_descriptions:
-        testcases += """
-            {
+        obj = {
                 "productid":"1",
                 "maxattachmentsizeinmbytes":"10",
                 "maxnumberofattachments":"5",
                 "name":"Application login",
-                "description":"%(description)s",
+                "description":tc_desc,
                 "testcasesteps":{
                     "testcasestep":{
                         "stepnumber":"1",
@@ -313,24 +510,20 @@ def get_returned_test_case(tc_descriptions):
                 "latestversion":"true",
                 "resourceidentity":"...",
                 "timeline":"..."
-            },""" % {'description': tc_desc}
-    if len(tc_descriptions) > 0:
-        testcases = testcases[:-1]
-        
-    testcases += "]}"
-    return urllib.quote(testcases)
+        }
+        tc_array.append(obj)
+
+    testcases = {"testcase": tc_array}
+    return urllib.quote(json.dumps(testcases))
 
 def get_returned_companies(company_names):
-    companies = "{\"company\":"
-    
-    # make it an array, if there's more than one
-    if len(company_names) > 1:
-        companies += "["
-        
+    '''
+        Takes an array of company names
+    '''
+    cos_array = []    
     for co_name in company_names:
-        companies += """
-            {
-                "name": "%(co_name)s",
+        obj = {
+                "name": co_name,
                 "phone": "617-417-0593",
                 "address": "31 lakeside drive",
                 "city": "Boston",
@@ -338,16 +531,11 @@ def get_returned_companies(company_names):
                 "companyUrl": "http//www.utest.com",
                 "resourceIdentity": "5",
                 "timeline": "bleh"
-            },""" % {'co_name': co_name}
-    if len(company_names) > 0:
-        companies = companies[:-1]
-        
-    # make it an array, if there's more than one
-    if len(company_names) > 1:
-        companies += "]"
+        }
+        cos_array.append(obj)
+    companies = {"company": cos_array}
 
-    companies += "}"
-    return urllib.quote(companies)
+    return urllib.quote(json.dumps(companies))
 
 def get_returned_environments(env_names):
     '''
@@ -355,12 +543,13 @@ def get_returned_environments(env_names):
     '''
     envs = []
     for env_name in env_names:
-        obj = {"name": env_name, \
-               "localeCode": "en_US", \
-               "sortOrder": 0, \
-               "environementTypeId": 1, \
-               "resourceIdentity": 007, \
-               "timeline": "whenever"}
+        obj = {"name": env_name, 
+               "localeCode": "en_US", 
+               "sortOrder": 0, 
+               "environementTypeId": 1, 
+               "resourceIdentity": 007, 
+               "timeline": "whenever"
+        }
         envs.append(obj)
 
     environments = {"environment": envs}
@@ -374,13 +563,45 @@ def get_returned_environment_type(envtype_names):
     '''
     env_types = []
     for env_name in envtype_names:
-        obj = {"name": env_name, \
-               "localeCode": "en_US", \
-               "sortOrder": 0, \
-               "resourceIdentity": 007, \
-               "timeline": "whenever"}
+        obj = {"name": env_name, 
+               "localeCode": "en_US", 
+               "sortOrder": 0, 
+               "resourceIdentity": 007, 
+               "timeline": "whenever"
+        }
         env_types.append(obj)
 
     environment_types = {"environmentType": env_types}
         
     return urllib.quote(json.dumps(environment_types))
+
+def get_returned_attachments(att_names):
+    '''
+        Takes an array of attachment filenames
+    '''
+    att_array = []
+    for att in att_names:
+        obj = {"fileName": att,
+            "fileType": "DOC",
+            "fileSizeInMB": "1",
+            "storageURL": "//home/docs/specs.doc",
+            "entityId": "1",
+            "entityTypeId": "1",
+            "resourceIdentity": "...",
+            "timeline": "..."
+        }
+        att_array.append(obj)
+    attachments = {"attachments": att_array}
+    return urllib.quote(json.dumps(attachments))
+
+
+
+
+
+
+
+
+
+
+
+    

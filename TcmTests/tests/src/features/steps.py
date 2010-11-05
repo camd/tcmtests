@@ -190,7 +190,7 @@ def user_role_check(name, role, expected_tf, assert_text):
     
     # fetch the user's resource identity
     user_id = get_user_resid(name)
-    conn.request("GET", "/api/v1/users/" + user_id + "/roles")
+    conn.request("GET", "/api/v1/users/" + str(user_id) + "/roles")
     response = conn.getresponse()
     assert_equal(response.status, 200, "Fetched a user")
 
@@ -365,23 +365,9 @@ def submit_a_new_test_case_with_description_foo(step, description):
     response = conn.getresponse()
     assert_equal(response.status, 200, "create new testcase")
 
-@step(u'test case exists with description "(.*)"')
-def test_case_exists_with_description_foo(step, description):
-    conn = get_connection()
-    
-    conn.request("GET", "/api/v1/testcases?description=" + urllib.quote(description))
-    response = conn.getresponse()
-    assert_equal(response.status, 200, "Fetched testcase")
-
-    respJson = json.loads(response.read())
-    # walk through all the testcases for this user to see if it has the requested one
-    roleJsonList = respJson.get("testcase")
-
-    found = False
-    for item in roleJsonList:
-        if (item.get("description") == description):
-            found = True
-    assert_equal(found, True, "looking for testcase desc of " + description)
+@step(u'test case with description "(.*)" (exists|does not exist)')
+def test_case_exists_with_description_foo(step, description, existence):
+    check_existence(step, "testcases", "description", description, "testcase", existence)
 
 
 '''
@@ -394,20 +380,7 @@ def test_case_exists_with_description_foo(step, description):
 
 @step(u'company "(.*)" (does not exist|exists)')
 def check_company_foo_existence(step, company_name, existence):
-        
-    company_name_enc = urllib.quote(company_name)
-    conn = get_connection()
-    conn.request("GET", "/api/v1/companies?name=" + company_name_enc)
-    response = conn.getresponse()
-
-    if existence.strip() == "does not exist":
-        assert_equal(response.status, 404, "company existence")
-    else:
-        assert_equal(response.status, 200, "company existence")
-
-        companyJson = get_single_item(response, "company")
-        assert_equal(companyJson.get("name"), company_name, "Company name match")
-
+    check_existence(step, "companies", "name", company_name, "company", existence)
 
 
 @step(u'add a new company with name "(.*)"')
@@ -433,21 +406,7 @@ def add_a_new_company_with_name_foo(step, company_name):
 
 @step(u'environment "(.*)" (does not exist|exists)')
 def check_environment_foo_existence(step, environment_name, existence):
-        
-    environment_name_enc = urllib.quote(environment_name)
-    conn = get_connection()
-    conn.request("GET", "/api/v1/environments?name=" + environment_name_enc)
-    response = conn.getresponse()
-
-    if existence.strip() == "does not exist":
-        assert_equal(response.status, 404, "environment existence")
-    else:
-        assert_equal(response.status, 200, "environment existence")
-
-        environmentJson = get_single_item(response, "environment")
-        assert_equal(environmentJson.get("name"), environment_name, "environment name match")
-
-
+    check_existence(step, "environment", "name", environment_name, "environment", existence)
 
 @step(u'add a new environment with name "(.*)"')
 def add_a_new_environment_with_name_foo(step, environment_name):
@@ -545,6 +504,8 @@ def get_resource_identity(type, uri):
         type: Something like user or role or permission.  The JSON object type
         uri: The URI stub to make the call
         
+        Return the id as a string.
+        
         @TODO: This presumes an array of objects is returned.  So it ONLY returns the resid for
         the first element of the array.  Will almost certainly need a better solution in the future.
         Like a new method "get_resource_identities" which returns an array of ids or something.  
@@ -556,6 +517,7 @@ def get_resource_identity(type, uri):
 
     respJson = json.loads(response.read())
     objJson = respJson.get(type)
-    return objJson[0].get("resourceIdentity")
+    # we always use this as a string
+    return str(objJson[0].get("resourceIdentity"))
 
 

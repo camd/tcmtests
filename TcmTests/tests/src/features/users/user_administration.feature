@@ -18,15 +18,15 @@ Feature: User Administration
     Scenario: Assign a Role to a User
         Given user "Jedi Roller" has active status "true"
         And the role of "CHIPPER" exists
-        And "Jedi Roller" does not already have the role of "CHIPPER"
+        And user "Jedi Roller" does not already have the role of "CHIPPER"
         When I add role of "CHIPPER" to user "Jedi Roller"
-        Then "Jedi Roller" has the role of "CHIPPER"
+        Then user "Jedi Roller" has the role of "CHIPPER"
         
     Scenario: Delete a role from a User
     
     Scenario: Check Roles of a User
         Given user "Jedi Roller" has active status "true"
-    	Then verify that "Jedi Roller" has these roles:
+    	Then verify that user "Jedi Roller" has these roles:
             | description |
             | SMASHER     |
             | MASHER      |
@@ -34,7 +34,7 @@ Feature: User Administration
     	
     Scenario: Check the Assignments of a User
         Given user "Jedi Assigned" has active status "true"
-    	Then verify that "Jedi Assigned" has these assignments:
+    	Then verify that user "Jedi Assigned" has these assignments:
             | description                 |
             | What the cat dragged in     |
             | Where I put the keys        |

@@ -5,7 +5,7 @@ Feature: New Users
 
     Scenario: Register a new user
         Given user "Jedi Jones" is not registered
-        When I submit information for "Jedi Jones"
+        When create new user named "Jedi Jones"
         Then user "Jedi Jones" is registered
         And user "Jedi Jones" has active status "false"
         

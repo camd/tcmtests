@@ -13,7 +13,7 @@ Feature: Users Roles
         and "DESC" role searches list "Zipper" before "Apple"
         
     Scenario: Create a new Role and add Permission
-        Given I am logged in as "Jedi Admin"
+        Given I am logged in as user "Jedi Admin"
         and user "Jedi Admin" has the role of "ADMINISTRATOR"
         When I create a new role of "Creationator"
         and add permission of "Spammer" to the role of "Creationator"
