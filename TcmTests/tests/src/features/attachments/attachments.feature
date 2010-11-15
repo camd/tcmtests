@@ -3,11 +3,10 @@ Feature: Attachments
     As Users
     We will implement attachment management
 
-    Scenario: Create a new Attachment
-        Given I am logged in as user "Peter Bishop"
-        And user "Peter Bishop" has the role of "ATTACHER"
-        And test case "transmute" exists
-        when I add a new attachment with name "Electron Microscope"
-        and attach "Electron Microscope" to test case "transmute"
-        Then test case "transmute" has attachment "Electron Microscope"
+    Scenario: Upload a new Attachment to a test case
+        Given I am logged in as user "Olivia Dunham"
+        And I have the role of "ATTACHER"
+        And test case with description "Trans-Universe Communication" exists
+        when I upload attachment "Selectric251.txt" to test case "Trans-Universe Communication"
+        Then test case "Trans-Universe Communication" has attachment "Selectric251.txt"
         

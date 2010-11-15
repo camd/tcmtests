@@ -16,6 +16,7 @@ Created on Oct 18, 2010
 
 import urllib
 import json
+from numpy.ma.testutils import assert_not_equal
 
 def get_scenario_data(scenarioName):
     '''
@@ -30,7 +31,7 @@ def get_scenario_data(scenarioName):
         It's simple, anyway.  I'm just concerned with how well it will scale.  
     '''
     
-    steps = ""
+    steps = None
     if scenarioName == "Register a new user":
         steps = \
             [
@@ -407,6 +408,38 @@ def get_scenario_data(scenarioName):
                  }
             ]
 
+
+
+    elif scenarioName == "Upload a new Attachment to a test case":
+        steps = \
+            [
+                {"comment": "logged in as user", 
+                 "request": "/api/v1/users/current",                         
+                 "response": get_returned_user(["Olivia Dunham"], "true"),  
+                 "status": "200"     
+                 },
+                {"comment": "check users roles", 
+                 "request": "/api/v1/users/8/roles",                         
+                 "response": get_returned_roles(["ATTACHER"]),  
+                 "status": "200"  
+                 },
+                {"comment": "check test case exists", 
+                 "request": "/api/v1/testcases?description=Trans-Universe%20Communication",             
+                 "response": get_returned_test_case(["Trans-Universe Communication"]),  
+                 "status": "200" 
+                 },
+                {"comment": "upload a new attachment", 
+                 "request": "/api/v1/testcases/123/attachments/upload",                             
+                 "response": "POST, w/o response", 
+                 "status": "200"
+                 },
+                {"comment": "check now environment type exists", 
+                 "request": "/api/v1/testcases/123/attachments",             
+                 "response": get_returned_attachments(["Selectric251"]),
+                 "status": "200"
+                 }
+            ]
+            
     data = json.dumps(steps)
     return data
 
@@ -417,12 +450,6 @@ def get_scenario_data(scenarioName):
                            RETURN TYPES
 
 ############################################################################
-
-ASSUMPTION: I wasn't sure here.  So I'm making an assumption that when you request an object type, you'll get
-            an array in return.  You may only get one element in that array, but it'll be a JSON array.  So I'm
-            going to return an array, even when it only has 1 item.  These methods will be passed an array of
-            whatever item type, and I'll return an array of JSON types for it, even if there's only 1 item in
-            that array.
 
 '''
 
