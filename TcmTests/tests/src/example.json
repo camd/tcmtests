@@ -1,0 +1,79 @@
+{
+    "searchResult": {
+        "@xsi.type": "searchResult",
+        "companies": {
+            "company": [
+                {
+                    "@xsi.type": "company",
+                    "address": "100 main street",
+                    "city": "weston",
+                    "countryId": 213,
+                    "name": "VMK new company - updated",
+                    "phone": "617.281.0001",
+                    "resourceIdentity": {
+                        "@xsi.type": "resourceIdentity",
+                        "id": 9,
+                        "url": "https:\/\/localhost\/platform\/services\/v2\/rest\/companies\/9",
+                        "version": 1
+                    },
+                    "timeline": {
+                        "@xsi.type": "timeline",
+                        "createDate": "2010-10-18T00:00:00-04:00",
+                        "createdBy": 16315,
+                        "lastChangeDate": "2010-10-18T17:42:24-04:00",
+                        "lastChangedBy": 16315
+                    },
+                    "url": "vmk.com",
+                    "zip": "02493"
+                },
+                {
+                    "@xsi.type": "company",
+                    "address": "100 main street",
+                    "city": "weston",
+                    "countryId": 211,
+                    "name": "VMK new company",
+                    "phone": "617.281.0001",
+                    "resourceIdentity": {
+                        "@xsi.type": "resourceIdentity",
+                        "id": 10,
+                        "url": "https:\/\/localhost\/platform\/services\/v2\/rest\/companies\/10",
+                        "version": 0
+                    },
+                    "timeline": {
+                        "@xsi.type": "timeline",
+                        "createDate": "2010-10-18T15:14:50-04:00",
+                        "createdBy": 16315,
+                        "lastChangeDate": "2010-10-18T15:14:50-04:00",
+                        "lastChangedBy": 16315
+                    },
+                    "url": "vmk.com",
+                    "zip": "02493"
+                },
+                {
+                    "@xsi.type": "company",
+                    "address": "100 main street",
+                    "city": "weston",
+                    "countryId": 211,
+                    "name": "VMK new company 1",
+                    "phone": "617.281.0001",
+                    "resourceIdentity": {
+                        "@xsi.type": "resourceIdentity",
+                        "id": 11,
+                        "url": "https:\/\/localhost\/platform\/services\/v2\/rest\/companies\/11",
+                        "version": 0
+                    },
+                    "timeline": {
+                        "@xsi.type": "timeline",
+                        "createDate": "2010-10-18T15:14:50-04:00",
+                        "createdBy": 16315,
+                        "lastChangeDate": "2010-10-18T15:14:50-04:00",
+                        "lastChangedBy": 16315
+                    },
+                    "url": "vmk.com",
+                    "zip": "02493"
+                }
+            ]
+        },
+        "totalResults": 3
+    }
+}

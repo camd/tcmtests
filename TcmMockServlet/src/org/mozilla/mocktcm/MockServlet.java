@@ -35,7 +35,6 @@ public class MockServlet extends HttpServlet {
             reqStr = reqStr + "?" + reqQuery;
         }
 
-        System.out.println("Request: " + reqStr);
         String requestBody = "Never set in this request";
 
         try {
@@ -46,6 +45,7 @@ public class MockServlet extends HttpServlet {
                 System.out.println("*** Scenario:  " + request.getParameter("scenario"));
                 System.out.println("*************\n\n");
 
+                System.out.println("Request: " + reqStr);
                 requestBody = getPostData(request).trim();
                 
 //                String[] dataParam = request.getParameterValues("data");
@@ -63,6 +63,7 @@ public class MockServlet extends HttpServlet {
             }
             // Return the next expected value for the current steps
             else if (steps != null && currentStep < steps.length) {
+                System.out.println("Request: " + reqStr);
                 response.setContentType("text/xml");               
                 
                 // if the request doesn't match the expected request in this set of steps, then return
@@ -98,6 +99,7 @@ public class MockServlet extends HttpServlet {
             }
             // no steps were set, but we got a request.  make a request string for making mock data
             else if (steps == null) {
+                System.out.println("Request: " + reqStr);
                 System.out.println("Unexpected Request.  No steps currently set.");
                 System.out.println("Perhaps the mock data should look like this:");
                 System.out.println("{\"status\":   \"" + 200 + 

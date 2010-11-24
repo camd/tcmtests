@@ -34,20 +34,54 @@ def check_existence(step, uri, arg_name, arg_value, obj_name, existence):
 
 def get_single_item(response, type):
     '''
-        Expect the response to hold an array of 1 and only 1 item.  Throw an error
-        if not.  Returns just the first item of that type.
+        Expect the response to be a single item or a list.  
+        If it's a list, we take the first item.
+    '''
+
+    respJson = json.loads(response.read())
+
+    item = None
+    
+    # if this was a search, extract the item from the "searchResult" object
+    # in this case, we only care about the first returned item in this list
+    if (respJson.__contains__("searchResult")):
+        sr = respJson.get("searchResult")
+        assert sr.__contains__(plural(type)), "didn't find expected type: " + plural(type) + " in:\n" + jstr(sr)
+                 
+        items = sr.get(plural(type)).get(type)
+            
+        if (len(items) > 0) and isinstance(items, list):
+            item = items[0]
+        else:
+            item = items
+    else:
+        item = respJson.get(type)
+
+    assert item != None, "didn't find expected type: " + type + " in:\n" + jstr(respJson)
+    return item
+
+def get_resp_list(response, type):
+    '''
+        Expect the response to be a search result containing a list.
+        The list may be a list of size 1, though.
     '''
     respJson = json.loads(response.read())
-    # in this case, we only care about the first returned item in this array
-    
-    arrayJson = respJson.get(type)
-    assert_not_equal(arrayJson, None, "response object didn't have our expected type of " + type + ":\n" + json.dumps(respJson))
-    if isinstance(arrayJson, ListType):
-        assert_equal(len(arrayJson), 1, "should only have 1 item of type: " + type)
-        return arrayJson[0]
-    else:
-        return arrayJson
 
+    resp_list = []
+    
+    # if this was a search, extract the item from the "searchResult" object
+    # in this case, we only care about the first returned item in this list
+    if (respJson.__contains__("searchResult")):
+        sr = respJson.get("searchResult")
+        assert sr.__contains__(plural(type)), "didn't find expected type: " + plural(type) + "in:\n" + jstr(sr) 
+        items = sr.get(plural(type)).get(type)
+        if isinstance(items, list):
+            resp_list = items
+        else:
+            resp_list.append(items)
+
+    return resp_list
+    
 
 def get_user_resid(name):
     ''' 
@@ -62,6 +96,23 @@ def get_role_resid(role):
     '''
     return get_resource_identity("role", "/api/v1/roles?description=" + role)
 
+def get_product_resid(product):
+    '''
+        Get the resourceIdentity of a role, based on the description of the role
+    '''
+    return get_resource_identity("product", "/api/v1/products?name=" + urllib.quote(product))
+
+def get_environment_resid(environment):
+    '''
+        Get the resourceIdentity of a role, based on the description of the role
+    '''
+    return get_resource_identity("environment", "/api/v1/environments?name=" + urllib.quote(environment))
+
+def get_test_case_resid(test_case):
+    '''
+        Get the resourceIdentity of a role, based on the description of the role
+    '''
+    return get_resource_identity("testcase", "/api/v1/testcases?name=" + urllib.quote(test_case))
 
 def get_resource_identity(type, uri):
     '''
@@ -70,25 +121,59 @@ def get_resource_identity(type, uri):
         
         Return the id as a string.
         
-        @TODO: This presumes an array of objects is returned.  So it ONLY returns the resid for
-        the first element of the array.  Will almost certainly need a better solution in the future.
-        Like a new method "get_resource_identities" which returns an array of ids or something.  
+        @TODO: This presumes a list of objects is returned.  So it ONLY returns the resid for
+        the first element of the list.  Will almost certainly need a better solution in the future.
+        Like a new method "get_resource_identities" which returns a list of ids or something.  
     '''
     world.conn.request("GET", uri)
     response = world.conn.getresponse()
     assert_equal(response.status, 200, "Response when asking for " + type)
-
-    respJson = json.loads(response.read())
-    objJson = respJson.get(type)
-    # we always use this as a string
-    return str(objJson[0].get("resourceIdentity"))
-
-def get_json_obj_or_bust(respJson, elementName):
-    '''
-        If we don't find anything with this element name, then we assert and dump out the json.  Our data
-        may be wrong.
-    '''
-    obj = respJson.get(elementName)
-    fail_if_equal(obj, None, "\"" + elementName + "\" element not found in this response: " + str(respJson))
-    return obj
     
+    field = "resourceIdentity"
+    respJson = get_single_item(response, type)
+    assert respJson.__contains__(field), "Object doesn't have " + field + ":\n" + jstr(respJson)
+    # we always use this as a string
+    return str(respJson.get(field).get("id"))
+
+
+def find_ordered_response(type, field, first, second, obj_list):
+    # now walk through the expected items and check the response
+    # to see that it is represented in the right order
+    foundFirst = False
+    foundSecond = False
+    
+    for act_item in obj_list:
+        act = act_item.get(field)
+        if (first == act):
+            foundFirst = True
+            assert foundSecond == False, "found %(second) before %(first)" % {second, first}
+        if (second == act):
+            foundSecond = True
+            assert foundFirst == True, "found %(second) before %(first)" % {second, first}
+
+    # since it's possible to drop through here without finding one or the other, we have to check that 
+    # both were actually found.
+    assert foundFirst == True, "First was found"
+    assert foundSecond == True, "Second was found"
+    
+def plural(type):
+    pl_map = {
+              "attachment": "attachments",
+              "company": "companies",
+              "environment": "environments",
+              "environmenttype": "environmenttypes",
+              "permission":"permissions",
+              "product":"products",
+              "role":"roles",
+              "testcase": "testcases",
+              "testcycle":"testcycles",
+              "testplan":"testplans",
+              "testrun":"testruns",
+              "testsuite":"testsuites",
+              "user": "users"
+              }
+
+    return pl_map.get(type)
+
+def jstr(obj):
+    return json.dumps(obj, sort_keys=True, indent=4)

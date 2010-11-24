@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns1:searchResult xmlns:ns1="http://utest.com/service/model/v2" xmlns:ns2="http://www.w3.org/2001/XMLSchema-instance" ns2:type="ns1:searchResult">
+	<ns1:companies>
+		<ns1:company xmlns:ns3="http://www.w3.org/2001/XMLSchema-instance" ns3:type="ns1:company">
+			<ns1:address>100 main street</ns1:address>
+			<ns1:city>weston</ns1:city>
+			<ns1:countryId>213</ns1:countryId>
+			<ns1:name>VMK new company - updated</ns1:name>
+			<ns1:phone>617.281.0001</ns1:phone>
+			<ns1:resourceIdentity xmlns:ns4="http://www.w3.org/2001/XMLSchema-instance" ns4:type="ns1:ResourceIdentity">
+				<ns1:id>9</ns1:id>
+				<ns1:url>https://localhost/platform/services/v2/rest/companies/9</ns1:url>
+				<ns1:version>1</ns1:version>
+			</ns1:resourceIdentity>
+			<ns1:timeline xmlns:ns4="http://www.w3.org/2001/XMLSchema-instance" ns4:type="ns1:Timeline">
+				<ns1:createDate>2010-10-18T00:00:00-04:00</ns1:createDate>
+				<ns1:createdBy>16315</ns1:createdBy>
+				<ns1:lastChangeDate>2010-10-18T17:42:24-04:00</ns1:lastChangeDate>
+				<ns1:lastChangedBy>16315</ns1:lastChangedBy>
+			</ns1:timeline>
+			<ns1:url>vmk.com</ns1:url>
+			<ns1:zip>02493</ns1:zip>
+		</ns1:company>
+		<ns1:company xmlns:ns3="http://www.w3.org/2001/XMLSchema-instance" ns3:type="ns1:company">
+			<ns1:address>100 main street</ns1:address>
+			<ns1:city>weston</ns1:city>
+			<ns1:countryId>211</ns1:countryId>
+			<ns1:name>VMK new company</ns1:name>
+			<ns1:phone>617.281.0001</ns1:phone>
+			<ns1:resourceIdentity xmlns:ns4="http://www.w3.org/2001/XMLSchema-instance" ns4:type="ns1:ResourceIdentity">
+				<ns1:id>10</ns1:id>
+				<ns1:url>https://localhost/platform/services/v2/rest/companies/10</ns1:url>
+				<ns1:version>0</ns1:version>
+			</ns1:resourceIdentity>
+			<ns1:timeline xmlns:ns4="http://www.w3.org/2001/XMLSchema-instance" ns4:type="ns1:Timeline">
+				<ns1:createDate>2010-10-18T15:14:50-04:00</ns1:createDate>
+				<ns1:createdBy>16315</ns1:createdBy>
+				<ns1:lastChangeDate>2010-10-18T15:14:50-04:00</ns1:lastChangeDate>
+				<ns1:lastChangedBy>16315</ns1:lastChangedBy>
+			</ns1:timeline>
+			<ns1:url>vmk.com</ns1:url>
+			<ns1:zip>02493</ns1:zip>
+		</ns1:company>
+		<ns1:company xmlns:ns3="http://www.w3.org/2001/XMLSchema-instance" ns3:type="ns1:company">
+			<ns1:address>100 main street</ns1:address>
+			<ns1:city>weston</ns1:city>
+			<ns1:countryId>211</ns1:countryId>
+			<ns1:name>VMK new company 1</ns1:name>
+			<ns1:phone>617.281.0001</ns1:phone>
+			<ns1:resourceIdentity xmlns:ns4="http://www.w3.org/2001/XMLSchema-instance" ns4:type="ns1:ResourceIdentity">
+				<ns1:id>11</ns1:id>
+				<ns1:url>https://localhost/platform/services/v2/rest/companies/11</ns1:url>
+				<ns1:version>0</ns1:version>
+			</ns1:resourceIdentity>
+			<ns1:timeline xmlns:ns4="http://www.w3.org/2001/XMLSchema-instance" ns4:type="ns1:Timeline">
+				<ns1:createDate>2010-10-18T15:14:50-04:00</ns1:createDate>
+				<ns1:createdBy>16315</ns1:createdBy>
+				<ns1:lastChangeDate>2010-10-18T15:14:50-04:00</ns1:lastChangeDate>
+				<ns1:lastChangedBy>16315</ns1:lastChangedBy>
+			</ns1:timeline>
+			<ns1:url>vmk.com</ns1:url>
+			<ns1:zip>02493</ns1:zip>
+		</ns1:company>
+	</ns1:companies>
+	<ns1:totalResults>3</ns1:totalResults>
+</ns1:searchResult>
