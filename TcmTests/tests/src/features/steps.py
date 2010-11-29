@@ -61,7 +61,7 @@ def logged_in_as_user_foo(step, name):
 
     #save this off for later steps
     world.userResId = thisUser.get("resourceIdentity").get("id")
-    assert_not_equal(world.userResId, None, "must have some value for user resourceIdentity: "+ jstr(thisUser))
+    assert world.userResId != None, "must have some value for user resourceIdentity: "+ jstr(thisUser)
     
     assert_equal(thisUser.get("firstname"), names[0], "First Name field didn't match")
     assert_equal(thisUser.get("lastname"), names[1], "Last Name field didn't match")
@@ -181,7 +181,7 @@ def foo_has_these_assignments(step, name):
 
 @step(u'I have the role of "(.*)"')
 def i_have_the_role_of_bar(step, role):
-    assert_not_equal(world.userResId, None, "must have some value for user resourceIdentity")
+    assert world.userResId != None, "must have some value for user resourceIdentity"
     user_id_role_check(world.userResId, role, True, "should have role of " + role)
 
 
@@ -541,6 +541,34 @@ def product_foo_has_environment_bar(step, product, haveness, environment):
     
     shouldFind = (haveness == "has")
     assert_equal(found, shouldFind, "looking for environment of " + environment)
+
+'''
+######################################################################
+
+                     ATTACHMENT STEPS
+
+######################################################################
+'''
+
+
+@step(u'upload attachment "(.*)" to test case "(.*)"')
+def upload_attachment_foo_to_test_case_bar(step, attachment, test_case):
+    test_case_id = get_test_case_resid(test_case)
+
+#    post_payload = post_data.get_submit_attachment(attachment)
+    headers = {"Accept": "application/xml", 
+               "Content-Type":"application/octet-stream",
+               "Content-Length": "%d" % len(post_payload) }
+
+    world.conn.request("POST", "/api/v1/testcases/" + test_case_id + "/attachments/upload", "", headers)
+#    world.conn.send(post_payload)
+    response = world.conn.getresponse()
+    assert_equal(response.status, 200, "Create new user")
+    
+
+@step(u'Then test case "(.*)" has attachment "(.*)"')
+def then_test_case_group1_has_attachment_group2(step, group1, group2):
+    assert False, 'This step must be implemented'
 
 
 

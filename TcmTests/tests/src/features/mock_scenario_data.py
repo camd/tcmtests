@@ -649,6 +649,11 @@ def get_scenario_data(scenarioName):
                  "response": as_resp(as_sr(get_returned_test_case(["Trans-Universe Communication"]))),  
                  "status": "200" 
                  },
+                {"comment": "get id of test case", 
+                 "request": "/api/v1/testcases?description=Trans-Universe%20Communication",             
+                 "response": as_resp(as_sr(get_returned_test_case(["Trans-Universe Communication"]))),  
+                 "status": "200" 
+                 },
                 {"comment": "upload a new attachment", 
                  "request": "/api/v1/testcases/123/attachments/upload",                             
                  "response": "POST, w/o response", 
